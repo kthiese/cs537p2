@@ -1,8 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <pthread.h>
 
-// Based off of Geeks for Geeks Queue Implementation with Queue Statistics added and modified to work with arrays of char pointers
+// Queue Implementation for array of char pointers
+
+// Monitor lock
+pthread_mutex_t mutex;
+
+// Condition variables
+pthread_cond_t empty;
+pthread_cond_t fill;
 
 // queue structure
 struct Queue
@@ -19,10 +26,11 @@ struct Queue
 	int size;
 	int capacity;
 	char** array;
+
 };
 
 // method to make a new queue, takes the capacity of the queue as an arguement
-struct Queue* createQueue(int capacity)
+struct Queue* CreateStringQueue(int capacity)
 {
 	// allocate memory for array of char pointers
 	struct Queue* queue = (struct Queue*) malloc(sizeof(struct Queue));
@@ -61,40 +69,50 @@ int isEmpty(struct Queue* queue)
 }
 
 // function to add item to queue, increments enqueue count
-void enqueue(struct Queue* queue, char* item)
+void EnqueueString(struct Queue* queue, char* item)
 {
+	pthread_mutex_lock(&mutex);
+
 	if(isFull(queue))
 	{
-		printf("queue is full, cannot add item");
-		return;
+		queue->enqueueBlockCount++;
+		pthread_cond_wait(&empty, &mutex);
 	}
-	else
-	{
-		queue->rear = (queue->rear + 1) % queue->capacity;
-		queue->array[queue->rear] = item;
-		queue->size++;
-		queue->enqueueCount++;
-		printf("%s added to queue \n", item);
-		printf("queue size is %d \n", queue->size);
-	}
+
+	
+	queue->rear = (queue->rear + 1) % queue->capacity;
+	queue->array[queue->rear] = item;
+	queue->size++;
+	queue->enqueueCount++;
+	printf("%s added to queue \n", item);
+	printf("queue size is %d \n", queue->size);
+	
+	pthread_cond_signal(&fill);
+	pthread_mutex_unlock(&mutex);
 	
 }
 
 // function to remove item from front of queue, changes size, front and increments dequeue count
-char* dequeue(struct Queue* queue)
+char* DequeueString(struct Queue* queue)
 {
+	pthread_mutex_lock(&mutex);
+
 	if(isEmpty(queue))
 	{
-		return "queue is empty";
+		queue->dequeueBlockCount++;
+		pthread_cond_wait(&fill, &mutex);
 	}
-	else
-	{
-		char* item = queue->array[queue->front];
-		queue->front = (queue->front + 1) % queue->capacity;
-		queue->size = queue->size--;
-		queue->dequeueCount++;
-		return item;
-	}
+	
+
+	char* item = queue->array[queue->front];
+	queue->front = (queue->front + 1) % queue->capacity;
+	queue->size--;
+	queue->dequeueCount++;
+
+	pthread_cond_signal(&empty);
+	pthread_mutex_unlock(&mutex);
+
+	return item;
 }
 
 // get item at front of queue
@@ -131,20 +149,44 @@ int getDequeueCount(struct Queue* queue)
 	return queue->dequeueCount;
 }
 
+// return enqueueBlockCount
+int getEnqueueBlockCount(struct Queue* queue)
+{
+	return queue->enqueueBlockCount;
+}
+
+// return enqueueBlockCount
+int getDequeueBlockCount(struct Queue* queue)
+{
+	return queue->dequeueBlockCount;
+}
+
+// print queue statistics
+void PrintQueueStats(struct Queue* queue)
+{
+	printf("Enqueue Count: %d \n", getEnqueueCount(queue));
+	printf("Dequeue Count: %d \n", getDequeueCount(queue));	
+	printf("Enqueue Block Count: %d \n", getEnqueueBlockCount(queue));
+	printf("Dequeue Block Count: %d \n", getDequeueBlockCount(queue));
+}
+
 int main()
 {
-	struct Queue* queue = createQueue(10);
+	struct Queue* queue = CreateStringQueue(2);
 
-	enqueue(queue, "hello");
-	printf("Enqueue count: %d \n", getEnqueueCount(queue));
-	enqueue(queue, "testing sucks");
-	printf("Enqueue count: %d \n", getEnqueueCount(queue));
-	enqueue(queue, "maybe testing isnt so bad after all");
-	printf("Enqueue count: %d \n", getEnqueueCount(queue));
-	printf("String at rear of the queue is: %s \n", getRear(queue));
-	printf("Dequeue count: %d \n", getDequeueCount(queue));
-	printf("%s dequeued from queue\n", dequeue(queue));
-	printf("Dequeue count: %d \n", getDequeueCount(queue));
+	EnqueueString(queue, "hello");
+	PrintQueueStats(queue);
+	EnqueueString(queue, "testing sucks");
+	PrintQueueStats(queue);
+	EnqueueString(queue, "maybe testing isnt so bad after all");
+	PrintQueueStats(queue);
+	PrintQueueStats(queue);
+	PrintQueueStats(queue);
+	printf("%s dequeued from queue\n", DequeueString(queue));
+	printf("%s dequeued from queue\n", DequeueString(queue));
+	printf("%s dequeued from queue\n", DequeueString(queue));
+	printf("%s dequeued from queue\n", DequeueString(queue));
+	PrintQueueStats(queue);
 
 	return 0;
 }
