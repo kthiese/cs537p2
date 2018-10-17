@@ -4,13 +4,6 @@
 
 // Queue Implementation for array of char pointers
 
-// Monitor lock
-pthread_mutex_t mutex;
-
-// Condition variables
-pthread_cond_t empty;
-pthread_cond_t fill;
-
 // queue structure
 struct Queue
 {
@@ -27,6 +20,15 @@ struct Queue
 	int capacity;
 	char** array;
 
+
+	// Monitor lock
+	pthread_mutex_t mutex;
+
+	// Condition variables
+	pthread_cond_t empty;
+	pthread_cond_t fill;
+
+
 };
 
 // method to make a new queue, takes the capacity of the queue as an arguement
@@ -34,6 +36,11 @@ struct Queue* CreateStringQueue(int capacity)
 {
 	// allocate memory for array of char pointers
 	struct Queue* queue = (struct Queue*) malloc(sizeof(struct Queue));
+
+	// initialize conditional vars and mutex
+	pthread_mutex_init(&queue->mutex, NULL);
+	pthread_cond_init(&queue->empty, NULL);
+	pthread_cond_init(&queue->fill, NULL);
 
 	// initialize queue stats to 0s
 	queue->enqueueCount = 0;
@@ -52,6 +59,7 @@ struct Queue* CreateStringQueue(int capacity)
 
 	// create underlying array
 	queue->array = (char**) malloc(queue->capacity * sizeof(char*));
+	
 
 	return queue;
 }
@@ -71,12 +79,12 @@ int isEmpty(struct Queue* queue)
 // function to add item to queue, increments enqueue count
 void EnqueueString(struct Queue* queue, char* item)
 {
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&queue->mutex);
 
 	if(isFull(queue))
 	{
 		queue->enqueueBlockCount++;
-		pthread_cond_wait(&empty, &mutex);
+		pthread_cond_wait(&queue->empty, &queue->mutex);
 	}
 
 	
@@ -85,22 +93,23 @@ void EnqueueString(struct Queue* queue, char* item)
 	queue->size++;
 	queue->enqueueCount++;
 	printf("%s added to queue \n", item);
-	printf("queue size is %d \n", queue->size);
+	//printf("queue size is %d \n", queue->size);
 	
-	pthread_cond_signal(&fill);
-	pthread_mutex_unlock(&mutex);
+	pthread_cond_signal(&queue->fill);
+	pthread_mutex_unlock(&queue->mutex);
 	
 }
 
 // function to remove item from front of queue, changes size, front and increments dequeue count
 char* DequeueString(struct Queue* queue)
 {
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&queue->mutex);
 
 	if(isEmpty(queue))
 	{
+		printf("queue is empty\n");
 		queue->dequeueBlockCount++;
-		pthread_cond_wait(&fill, &mutex);
+		pthread_cond_wait(&queue->fill, &queue->mutex);
 	}
 	
 
@@ -109,8 +118,8 @@ char* DequeueString(struct Queue* queue)
 	queue->size--;
 	queue->dequeueCount++;
 
-	pthread_cond_signal(&empty);
-	pthread_mutex_unlock(&mutex);
+	pthread_cond_signal(&queue->empty);
+	pthread_mutex_unlock(&queue->mutex);
 
 	return item;
 }
@@ -168,7 +177,10 @@ void PrintQueueStats(struct Queue* queue)
 	printf("Dequeue Count: %d \n", getDequeueCount(queue));	
 	printf("Enqueue Block Count: %d \n", getEnqueueBlockCount(queue));
 	printf("Dequeue Block Count: %d \n", getDequeueBlockCount(queue));
+	printf("Queue Size: %d \n", queue->size);
 }
+
+//function that generates numbers and tries to add to queue
 
 int main()
 {
