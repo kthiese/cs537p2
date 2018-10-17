@@ -1,0 +1,1 @@
+void *lowertoupper(void *ptr);

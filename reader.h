@@ -1,0 +1,1 @@
+void *readStrings(void *ptr);

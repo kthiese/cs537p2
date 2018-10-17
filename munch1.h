@@ -1,0 +1,1 @@
+void *spacetostar(void *ptr);
