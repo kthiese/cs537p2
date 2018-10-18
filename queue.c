@@ -83,6 +83,7 @@ void EnqueueString(struct Queue* queue, char* item)
 
 	if(isFull(queue))
 	{
+		
 		queue->enqueueBlockCount++;
 		pthread_cond_wait(&queue->empty, &queue->mutex);
 	}
@@ -92,8 +93,6 @@ void EnqueueString(struct Queue* queue, char* item)
 	queue->array[queue->rear] = item;
 	queue->size++;
 	queue->enqueueCount++;
-	printf("%s added to queue \n", item);
-	//printf("queue size is %d \n", queue->size);
 	
 	pthread_cond_signal(&queue->fill);
 	pthread_mutex_unlock(&queue->mutex);
@@ -107,12 +106,11 @@ char* DequeueString(struct Queue* queue)
 
 	if(isEmpty(queue))
 	{
-		printf("queue is empty\n");
 		queue->dequeueBlockCount++;
+			
 		pthread_cond_wait(&queue->fill, &queue->mutex);
 	}
 	
-
 	char* item = queue->array[queue->front];
 	queue->front = (queue->front + 1) % queue->capacity;
 	queue->size--;
@@ -179,27 +177,3 @@ void PrintQueueStats(struct Queue* queue)
 	printf("Dequeue Block Count: %d \n", getDequeueBlockCount(queue));
 	printf("Queue Size: %d \n", queue->size);
 }
-
-//function that generates numbers and tries to add to queue
-
-int main()
-{
-	struct Queue* queue = CreateStringQueue(2);
-
-	EnqueueString(queue, "hello");
-	PrintQueueStats(queue);
-	EnqueueString(queue, "testing sucks");
-	PrintQueueStats(queue);
-	EnqueueString(queue, "maybe testing isnt so bad after all");
-	PrintQueueStats(queue);
-	PrintQueueStats(queue);
-	PrintQueueStats(queue);
-	printf("%s dequeued from queue\n", DequeueString(queue));
-	printf("%s dequeued from queue\n", DequeueString(queue));
-	printf("%s dequeued from queue\n", DequeueString(queue));
-	printf("%s dequeued from queue\n", DequeueString(queue));
-	PrintQueueStats(queue);
-
-	return 0;
-}
-	

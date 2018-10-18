@@ -13,7 +13,7 @@ struct Queue{
 
 struct Queue* CreateStringQueue(int capacity);
 int isFull(struct Queue* queue);
-int isempty(struct Queue* queue);
+int isEmpty(struct Queue* queue);
 void EnqueueString(struct Queue* queue, char* item);
 char* DequeueString(struct Queue* queue);
 char* getFront(struct Queue* queue);

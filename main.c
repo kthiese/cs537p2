@@ -54,4 +54,10 @@ int main() {
 //	pthread_exit(munch1);
 //	pthread_exit(munch2);
 //	pthread_exit(writer);
+
+	PrintQueueStats(m1queue);
+	PrintQueueStats(m2queue);
+	PrintQueueStats(wqueue);
+
+	return 0;
 }

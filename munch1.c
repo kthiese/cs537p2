@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <pthread.h>
 #include "queue.h"
 #include "args.h"
 #define BUF 160
@@ -18,9 +19,12 @@ void *spacetostar(void *ptr){
                 	}
         	}
 		EnqueueString(arg->queue2, string);
-		string = (char *) malloc(sizeof(char)*BUF);
+		string = (char*)malloc(sizeof(char)*BUF);
 		string = DequeueString(arg->queue1);
+
 	}
+	EnqueueString(arg->queue2, string);
+	pthread_exit(NULL);
 
 	return 0;
 
