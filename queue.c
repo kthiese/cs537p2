@@ -1,3 +1,9 @@
+// Alec Scheele
+// Kathryn Thiese
+
+// ascheele abscheele
+// thiese thiese
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -92,7 +98,11 @@ void EnqueueString(struct Queue* queue, char* item)
 	queue->rear = (queue->rear + 1) % queue->capacity;
 	queue->array[queue->rear] = item;
 	queue->size++;
-	queue->enqueueCount++;
+
+	if(item != NULL)
+	{
+		queue->enqueueCount++;
+	}
 	
 	pthread_cond_signal(&queue->fill);
 	pthread_mutex_unlock(&queue->mutex);
@@ -114,7 +124,11 @@ char* DequeueString(struct Queue* queue)
 	char* item = queue->array[queue->front];
 	queue->front = (queue->front + 1) % queue->capacity;
 	queue->size--;
-	queue->dequeueCount++;
+
+	if(item != NULL)
+	{
+		queue->dequeueCount++;
+	}
 
 	pthread_cond_signal(&queue->empty);
 	pthread_mutex_unlock(&queue->mutex);
@@ -171,9 +185,9 @@ int getDequeueBlockCount(struct Queue* queue)
 // print queue statistics
 void PrintQueueStats(struct Queue* queue)
 {
-	printf("Enqueue Count: %d \n", getEnqueueCount(queue));
-	printf("Dequeue Count: %d \n", getDequeueCount(queue));	
-	printf("Enqueue Block Count: %d \n", getEnqueueBlockCount(queue));
-	printf("Dequeue Block Count: %d \n", getDequeueBlockCount(queue));
-	printf("Queue Size: %d \n", queue->size);
+	fprintf(stdout, "Enqueue Count: %d \n", getEnqueueCount(queue));
+	fprintf(stdout, "Dequeue Count: %d \n", getDequeueCount(queue));	
+	fprintf(stdout, "Enqueue Block Count: %d \n", getEnqueueBlockCount(queue));
+	fprintf(stdout, "Dequeue Block Count: %d \n", getDequeueBlockCount(queue));
+	//printf("Queue Size: %d \n", queue->size);
 }

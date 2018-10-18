@@ -1,3 +1,9 @@
+// Alec Scheele
+// Kathryn Thiese
+
+// ascheele abscheele
+// thiese thiese
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -5,8 +11,9 @@
 #include <pthread.h>
 #include "queue.h"
 #include "args.h"
-#define qsize 10
-#define BUF 160
+//#define qsize 10
+
+extern const int BUF;
 
 void *readStrings(void *ptr){
 	char* string = (char*)malloc(sizeof(char)*BUF);
@@ -30,6 +37,7 @@ void *readStrings(void *ptr){
 		else if (c == '\n'){
 			i = 0;
 			EnqueueString(arg->queue1, string);
+			
 			string = (char*)malloc(sizeof(char)*BUF);
 		}
 		else if (c != EOF){
@@ -37,6 +45,10 @@ void *readStrings(void *ptr){
 			i++;
 		}
 	}while (c != EOF);
+	
+	//free string
+	//free(string);
+
 	EnqueueString(arg->queue1, NULL);
 
 	pthread_exit(NULL);

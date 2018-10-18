@@ -1,3 +1,9 @@
+// Alec Scheele
+// Kathryn Thiese
+
+// ascheele abscheele
+// thiese thiese
+
 struct Queue{
 	int enqueueCount;
 	int dequeueCount;

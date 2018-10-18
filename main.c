@@ -1,3 +1,9 @@
+// Alec Scheele
+// Kathryn Thiese
+
+// ascheele abscheele
+// thiese thiese
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,8 +15,8 @@
 #include "munch2.h"
 #include "writer.h"
 
-
-#define qsize 10
+const int BUF = 1024;
+const int qsize = 10;
 
 int main() {
 	struct Queue* m1queue = CreateStringQueue(qsize);

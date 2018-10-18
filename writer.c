@@ -1,10 +1,16 @@
+// Alec Scheele
+// Kathryn Thiese
+
+// ascheele abscheele
+// thiese thiese
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
 #include "queue.h"
 #include "args.h"
-#define qsize 10
+//#define qsize 10
 
 void *writeStrings(void *ptr){
 	struct args *arg = (struct args*) ptr;
@@ -13,7 +19,10 @@ void *writeStrings(void *ptr){
 	while (string != NULL) {
 		i++;
 		fprintf(stdout, "%s\n", string);
+		// free string
+		//free(string);
 		string = DequeueString(arg->queue1);
+		//char * string = DequeueString(arg->queue1);
 	}
 	fprintf(stdout, "Strings processed: %i\n", i);
 	pthread_exit(NULL);
